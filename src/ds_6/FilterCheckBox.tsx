@@ -22,7 +22,7 @@ export default function FilterCheckBox(props) {
     koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     return () => {
       myService.unsubscribe(changeParams);
-
+      koobFiltersService.unsubscribe(changeParams);
     }
   }, [])
   function changeParams(model) {
