@@ -1,5 +1,5 @@
-import React, { useMemo, useRef } from "react";
-import { useState, useEffect } from "react";
+import React from "react";
+import { useState, useEffect,useRef } from "react";
 import { MyService } from "./MyService";
 import { default as ReactSelect, components } from "react-select";
 
@@ -19,10 +19,10 @@ export default function FilterCheckBox(props) {
   const koobFiltersService = window.__koobFiltersService||window.parent.__koobFiltersService;
   useEffect(() => {
     myService.subscribeUpdatesAndNotify(changeParams);
-
+    koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     return () => {
       myService.unsubscribe(changeParams);
-
+      koobFiltersService.unsubscribe(changeParams);
     }
   }, [])
   function changeParams(model) {
