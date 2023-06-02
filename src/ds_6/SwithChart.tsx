@@ -10,8 +10,8 @@ export default function SwitchChart(props) {
   const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
   const cfg = JSON.parse(JSON.stringify(props.cfg.getRaw()));
   const error = useRef(false);
-  const loading = useRef(false);
-  const [filter, setFilter] = useState(koobFiltersService._model.filters);
+  const loading = useRef(true);
+  const [filter, setFilter] = useState({});
   const [dataset, setDataset] = useState({});
   const dimensions = useRef<Object[]>(cfg.dataSource.dimensions);
   const [chartType, setChartType] = useState(0);
@@ -22,6 +22,7 @@ export default function SwitchChart(props) {
     koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     myService.subscribeUpdatesAndNotify(changeParams);
     urlState.subscribeUpdatesAndNotify(setUrlParams);
+    setFilter(koobFiltersService._model.filters);
     return () => {
       koobFiltersService.unsubscribe(changeParams);
       myService.unsubscribe(changeParams);
@@ -29,7 +30,7 @@ export default function SwitchChart(props) {
   }, [])
 
   useEffect(() => {
-    if (!(error.current || loading.current)) {
+    if (!(error.current )) {
       const measures = cfg.dataSource.measures;
       const filters = cfg.dataSource.filters;
       for (let key of Object.keys(filters)) {
@@ -49,11 +50,12 @@ export default function SwitchChart(props) {
             setDataset({ source: data, dimensions: Object.keys(data['0']) });
           else
             setDataset({ source: [], dimensions: [] });
+            loading.current=false;
         }
         )
     }
   }, [JSON.stringify(filter)])
-  if (error.current) return <article className="Dashlet error">{error.current}</article>;
+  if (error.current) return
   if (loading.current) return <article className="Dashlet loading" />;
   return (
     <div >
@@ -74,10 +76,11 @@ export default function SwitchChart(props) {
               chartCfg={cfg}
               filters={filter}
               onChangeDim={(e) => {
+                loading.current=true;
                 dimensions.current = (e.dim);
                 koobFiltersService.setFilters(cfg.dataSource.koob, { ...filter, ...e.filters })
               }}
-              onClickFilter={(koob, filters) => { koobFiltersService.setFilters(koob, filters); }}
+              onClickFilter={(koob, filters) => { loading.current=true;koobFiltersService.setFilters(koob, filters); }}
             />}
         </div>
         {chartType == 1 &&

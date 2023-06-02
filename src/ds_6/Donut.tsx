@@ -17,6 +17,7 @@ export default function Donut(props) {
   useEffect(() => {
     koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     myService.subscribeUpdatesAndNotify(changeParams);
+    setFilter(koobFiltersService._model.filters);
     return () => {
       koobFiltersService.unsubscribe(changeParams);
       myService.unsubscribe(changeParams);
