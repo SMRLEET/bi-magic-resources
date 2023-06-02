@@ -1,19 +1,19 @@
 import { useState, useEffect, useRef, } from "react";
 import React from "react";
-import { urlState } from "bi-internal/core";
 import { MyService } from "./MyService";
 import './Select.css';
 import EchartView from "./EhartView";
 export default function Donut(props) {
+  const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
   const cfg = JSON.parse(JSON.stringify(props.cfg.getRaw()));
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({});
-  const [dataset, setDataset] = useState(cfg.dataSource);
-  const [dimensions, setDimensions] = useState<Object>(cfg.dataSource.dimensions);
+  const error = useRef(false);
+  const loading = useRef(false);
+  const [filter, setFilter] = useState(koobFiltersService._model.filters);
+  const [dataset, setDataset] = useState({});
+  const dimensions = useRef<Object>(cfg.dataSource.dimensions);
   const divRef = useRef<HTMLDivElement>(null);
   const myService = MyService.createInstance(cfg.dataSource.koob);
-  const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
+
   useEffect(() => {
     koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     myService.subscribeUpdatesAndNotify(changeParams);
@@ -22,9 +22,8 @@ export default function Donut(props) {
       myService.unsubscribe(changeParams);
     };
   }, [])
-
   useEffect(() => {
-    if (!(error || loading)) {
+    if (!(error.current || loading.current)) {
       const measures = cfg.dataSource.measures;
       const filters = cfg.dataSource.filters;
       for (let key of Object.keys(filters)) {
@@ -36,7 +35,7 @@ export default function Donut(props) {
       myService.getKoobDataByCfg(
         {
           with: cfg.dataSource.koob,
-          columns: [...dimensions, ...measures],
+          columns: [...dimensions.current, ...measures],
           filters,
         })
         .then(data => {
@@ -47,27 +46,33 @@ export default function Donut(props) {
         }
         )
     }
-  }, [JSON.stringify({ filter }), loading, error]);
-  if (error) return <article className="Dashlet error">{error}</article>;
-  if (loading) return <article className="Dashlet loading" />;
+  }, [JSON.stringify(filter)])
 
+  useEffect(() => {
+    console.log('render Donut')
+  })
   return (
     <div ref={divRef}>
-      <EchartView
-        width={divRef.current?.offsetWidth}
-        height={divRef.current?.offsetParent?.clientHeight}
-        dimensions={dataset.dimensions}
-        source={dataset.source}
-        chartCfg={cfg}
-        filters={filter}
-        onChangeDim={setDimensions}
-      />
+      {Object.keys(dataset).length > 0 ?
+        <EchartView
+          width={divRef.current?.offsetWidth}
+          height={divRef.current?.offsetParent?.clientHeight}
+          dimensions={dataset.dimensions}
+          source={dataset.source}
+          chartCfg={cfg}
+          filters={filter}
+          onChangeDim={(e) => {
+            dimensions.current = (e.dim);
+            koobFiltersService.setFilters(cfg.dataSource.koob, { ...filter, ...e.filters })
+          }}
+          onClickFilter={(koob, filters) => { koobFiltersService.setFilters(koob, filters); }}
+        /> : <article className="Dashlet loading" />}
     </div>
   );
 
   function changeParams(model) {
-    setLoading(model.loading);
-    setError(model.erorr);
+    loading.current = (model.loading);
+    error.current = (model.erorr);
     setFilter(model.filters);
   }
 

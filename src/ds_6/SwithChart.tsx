@@ -7,16 +7,17 @@ import { UrlState } from "bi-internal/core";
 import './Select.css';
 import EchartView from "./EhartView";
 export default function SwitchChart(props) {
+  const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
   const cfg = JSON.parse(JSON.stringify(props.cfg.getRaw()));
-  const [error, setError] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState({});
-  const [dataset, setDataset] = useState(cfg.dataSource);
+  const error = useRef(false);
+  const loading = useRef(false);
+  const [filter, setFilter] = useState(koobFiltersService._model.filters);
+  const [dataset, setDataset] = useState({});
   const dimensions = useRef<Object[]>(cfg.dataSource.dimensions);
   const [chartType, setChartType] = useState(0);
   const divRef = useRef<HTMLDivElement>(null);
   const myService = MyService.createInstance(cfg.dataSource.koob);
-  const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
+
   useEffect(() => {
     koobFiltersService.subscribeUpdatesAndNotify(changeParams);
     myService.subscribeUpdatesAndNotify(changeParams);
@@ -28,8 +29,7 @@ export default function SwitchChart(props) {
   }, [])
 
   useEffect(() => {
-
-    if (!(error || loading)) {
+    if (!(error.current || loading.current)) {
       const measures = cfg.dataSource.measures;
       const filters = cfg.dataSource.filters;
       for (let key of Object.keys(filters)) {
@@ -52,10 +52,9 @@ export default function SwitchChart(props) {
         }
         )
     }
-  }, [JSON.stringify({ filter }), loading, error]);
-  if (error) return <article className="Dashlet error">{error}</article>;
-  if (loading) return <article className="Dashlet loading" />;
-
+  }, [JSON.stringify(filter)])
+  if (error.current) return <article className="Dashlet error">{error.current}</article>;
+  if (loading.current) return <article className="Dashlet loading" />;
   return (
     <div >
       <div className="mainDiv">
@@ -66,7 +65,7 @@ export default function SwitchChart(props) {
       </div>
       <div style={{ marginTop: '10px' }} ref={divRef}>
         <div >
-          {chartType == 0 &&
+          {(chartType == 0 && Object.keys(dataset).length > 0) &&
             <EchartView
               width={divRef.current?.offsetWidth}
               height={divRef.current?.offsetParent?.clientHeight}
@@ -74,7 +73,11 @@ export default function SwitchChart(props) {
               source={dataset.source}
               chartCfg={cfg}
               filters={filter}
-              onChangeDim={(e) => { dimensions.current = e }}
+              onChangeDim={(e) => {
+                dimensions.current = (e.dim);
+                koobFiltersService.setFilters(cfg.dataSource.koob, { ...filter, ...e.filters })
+              }}
+              onClickFilter={(koob, filters) => { koobFiltersService.setFilters(koob, filters); }}
             />}
         </div>
         {chartType == 1 &&
@@ -88,8 +91,8 @@ export default function SwitchChart(props) {
     UrlState.navigate({ chartType: e.target.value });
   }
   function changeParams(model) {
-    setLoading(model.loading);
-    setError(model.erorr);
+    loading.current=(model.loading);
+    error.current=(model.erorr);
     setFilter(model.filters);
   }
   function setUrlParams(model) {

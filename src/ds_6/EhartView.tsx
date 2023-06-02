@@ -1,20 +1,23 @@
-import { useEffect, useRef, useMemo, useLayoutEffect, } from "react";
+import { useEffect, useRef, useMemo, useLayoutEffect, ReactNode, ReactElement, } from "react";
 import React from "react";
 import Echart from "./Echart";
 import './Select.css';
-export default function EchartView({
-  chartCfg,
+export default React.memo(function EchartView({
+  chartCfg ,
   dimensions,
   source,
   filters,
   width,
   height,
-  onChangeDim
+  onChangeDim,
+  onClickFilter
 }) {
+  useEffect(() => {
+    console.log('render EchartView')
+  })
   const option = useRef(chartCfg.echartOptions);
-  const hierarchyLevel = useRef(chartCfg.hierarchy ? chartCfg.hierarchy.indexOf(dimensions[0]) : null);
+  const hierarchyLevel = useRef(chartCfg.hierarchy ? chartCfg.hierarchy.indexOf(dimensions[0]) : 0);
   const firstInnit = useRef(true);
-  const koobFiltersService = window.__koobFiltersService || window.parent.__koobFiltersService;
   const chartRef = useRef()
   const selectedValue = useRef({})
   useEffect(() => {
@@ -30,32 +33,23 @@ export default function EchartView({
         selectedValue.current = { [Object.keys(e.data)[0]]: ['=', e.data[Object.keys(e.data)[0]]] };
         if (chartCfg?.hierarchy) {
           hierarchyLevel.current < chartCfg.hierarchy.length - 1 ? hierarchyLevel.current += 1 : hierarchyLevel.current = 0
-
+          if (hierarchyLevel.current > 0) {
+            onChangeDim({ dim: chartCfg.hierarchy[hierarchyLevel.current], filters: { ...filters, ...selectedValue.current } });
+          }
+          else {
+            const dropFilters = {};
+            for (let filt of chartCfg.hierarchy) {
+              dropFilters[filt] = ['!='];
+            }
+            onChangeDim({ dim: chartCfg.hierarchy[0], filters: { ...filters, ...dropFilters } })
+          }
         }
         else {
-          koobFiltersService.setFilters(chartCfg.dataSource.koob, { ...filters, ...selectedValue.current });
+          onClickFilter(chartCfg.dataSource.koob, { ...filters, ...selectedValue.current });
         }
       }, 1000));
   }, [])
-  useEffect(() => {
-    if (!chartCfg.onClickFilter || !chartCfg.hierarchy) return;
-    if (firstInnit.current) {
-      firstInnit.current = false;
-      return;
-    }
-    if (hierarchyLevel.current > 0) {
-      onChangeDim(chartCfg.hierarchy[hierarchyLevel.current]);
-      koobFiltersService.setFilters(chartCfg.dataSource.koob, { ...filters, ...selectedValue.current });
-    }
-    else {
-      const dropFilters = {};
-      for (let filt of chartCfg.hierarchy) {
-        dropFilters[filt] = ['!='];
-      }
-      koobFiltersService.setFilters(chartCfg.dataSource.koob, { ...filters, ...dropFilters });
-      onChangeDim(chartCfg.hierarchy[0])
-    }
-  }, [hierarchyLevel.current])
+
   const resetOptions = useMemo<Object>(() => {
     if (dimensions && source)
       return ({ ...option.current, dataset: { dimensions: dimensions, source: source } })
@@ -73,7 +67,14 @@ export default function EchartView({
       ref={chartRef}
     />
   );
-}
+}, (prevProps, nextProps) => {
+  if (JSON.stringify({ dimensions: prevProps.dimensions, source: prevProps.source }) !=
+    JSON.stringify({ dimensions: nextProps.dimensions, source: nextProps.source }))
+    return false;
+  if (prevProps.width !== nextProps.width && prevProps.height !== nextProps.height)
+    return false
+  return true;
+})
 function evalFormatter(formatter) {
   try {
     return eval(formatter);
@@ -81,6 +82,7 @@ function evalFormatter(formatter) {
     return formatter;
   }
 }
+
 function debounce(func, timeout = 1000) {
   let timer;
   return (...args) => {

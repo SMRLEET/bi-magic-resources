@@ -28,7 +28,7 @@ export class MyService extends BaseService<IMyServiceModel> {
 
   public async getKoobDataByCfg(cfg): Promise<any> {
     const url: string = AppConfig.fixRequestUrl(`/api/v3/koob/data`);
-
+    super.loading = true;
     const columns = cfg.columns;
 
     let filters = {};
@@ -71,10 +71,11 @@ export class MyService extends BaseService<IMyServiceModel> {
           data = [data];
         }
       }
-
+      super.loading = false;
       return data;
-
-    } catch (e) {
+    }
+    catch (e) {
+      super.error = e;
       return '';
     }
   }
