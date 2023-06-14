@@ -32,6 +32,7 @@ function Echart(
     height,
     echartOptions,
     selectedValues = {},
+    eventHandler
   }: any,
   ref: React.Ref<any>,
 
@@ -80,6 +81,12 @@ function Echart(
     }
   }, [width, height]);
 
+  useEffect(() => {
+    if (chartRef.current) {
+      for (let event of eventHandler)
+        chartRef.current.on(event.event, event.action);
+    }
+  }, []);
 
   return <div ref={divRef} />
 }

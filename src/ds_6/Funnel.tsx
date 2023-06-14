@@ -1,7 +1,7 @@
 import { BaseService } from "bi-internal/core";
 import React from "react";
 import Echart from './Echart';
-import { MyService } from "./MyService";
+import { MyService } from "./services/MyService";
 
 function f(number, maximumSignificantDigits) {
   return new Intl.NumberFormat('ru-RU', { maximumSignificantDigits }).format(number);
