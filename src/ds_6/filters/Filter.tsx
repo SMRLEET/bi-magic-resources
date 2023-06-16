@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { FormSelect } from 'react-bootstrap';
 import '../styles/Select.css';
 import ServiceLayer from "../chartLayers/ServiceLayer";
@@ -34,8 +34,6 @@ function FilterWithLayers({ dataset, functionHandler,filteredData, cfg }) {
     functionHandler.setFilters({ [dim]: ['=', ...values] })
   }
   const keys = Object.keys(dataset);
-
-  if (keys.length === 0) return (<a>ЗАГРЗУКА</a>)
   return (
     <div style={{ overflow: 'auto' }}>
       <div>

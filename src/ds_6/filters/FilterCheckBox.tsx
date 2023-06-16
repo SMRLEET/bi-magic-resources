@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { default as ReactSelect, components } from "react-select";
 import ServiceLayer from "../chartLayers/ServiceLayer";
 import DataFilterLayer from "../chartLayers/DataFilterLayer";
@@ -24,7 +24,7 @@ export default function FilterCheckBox(props) {
 function FilterCheckBoxtWithLayers({ dataset,
   cfg, filteredData,
   functionHandler, filters }) {
-  const [optionSelected, setOptionSelected] = useState({});
+ 
   const data = useMemo(() => {
     let result = Object.assign({}, dataset);
     for (let key of Object.keys(dataset)) {
@@ -35,20 +35,18 @@ function FilterCheckBoxtWithLayers({ dataset,
   }, [JSON.stringify(dataset)])
 
 
-  useEffect(() => {
-    if (Object.keys(dataset).length === 0) return;
-    setOptionSelected((Object.keys(filters))
-      .reduce(
-        (accumulator, key) => (
-          {
-            ...accumulator, [key]: accumulator[key][0] == '!=' ? (accumulator[key]
-              .map(val => ({ value: val, label: val }))).splice(1, accumulator[key].length) : dataset[key].values
-              .filter(filter => (accumulator[key].indexOf(filter) === -1))
-              .map(filter => ({ value: filter, label: filter,isDisable:true }))
-          })
-        , filters
-      ));
-  }, [JSON.stringify(filters)])
+  const optionSelected = useMemo(() => { return Object.keys(filters)
+    .reduce(
+      (accumulator, key) => (
+        {
+          ...accumulator, [key]: accumulator[key][0] == '!=' ? (accumulator[key]
+            .map(val => ({ value: val, label: val }))).splice(1, accumulator[key].length) : dataset[key].values
+            .filter(filter => (accumulator[key].indexOf(filter) === -1))
+            .map(filter => ({ value: filter, label: filter,isDisable:true }))
+        })
+      , filters
+    )}, [JSON.stringify(filters)])
+  
 
   const Option = (props) => {
 
@@ -88,9 +86,11 @@ function FilterCheckBoxtWithLayers({ dataset,
                 closeMenuOnSelect={false}
                 hideSelectedOptions={true}
                 maxMenuHeight={100}
-                styles={{option:(styles,{data,selectProps})=>{
-                  return {...styles,color: filteredData[selectProps.id.replace('select-', '')].indexOf(data.value) == -1? 'gray' : 'black'}
-                }}}
+                styles={{
+                  option: (styles, { data, selectProps }) => {
+                    return { ...styles, color: filteredData[selectProps.id.replace('select-', '')].indexOf(data.value) == -1 ? 'gray' : 'black' }
+                  }
+                }}
                 components={{
                   Option
                 }}

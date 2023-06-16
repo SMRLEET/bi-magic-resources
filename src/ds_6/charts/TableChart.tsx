@@ -5,17 +5,11 @@ export default function TableChart(props) {
   const data = props.data?.source;
   const divRef = useRef<HTMLDivElement>(null)
   const dimensions = props.data?.dimensions;
-  const hasHorizontalScrollbar = useRef(divRef.current?.scrollHeight > divRef.current?.clientHeight)
-  const headerStyle = useRef({ width: '100%' })
-  useEffect(() => {
-    if (hasHorizontalScrollbar?.current) {
-      headerStyle.current = { width: '99%' }
-    }
-  }, [])
+
   return (
     <div className="scroll-table" style={{ height: props.height }}>
       <div style={{ display: "inline-flex" }}>
-        <div style={headerStyle.current}>
+        <div style={divRef.current?.scrollHeight > divRef.current?.clientHeight?{ width: '99%' }:{ width: '100%' }}>
           <table >
             <thead>
               <tr>
@@ -24,7 +18,7 @@ export default function TableChart(props) {
             </thead>
           </table>
         </div>
-        {hasHorizontalScrollbar.current && <div style={{ width: '1%', backgroundColor: '#b1b0ae' }}>
+        {divRef.current?.scrollHeight > divRef.current?.clientHeight && <div style={{ width: '1%', backgroundColor: '#b1b0ae' }}>
         </div>}
       </div>
 
@@ -42,7 +36,7 @@ export default function TableChart(props) {
             </tbody>
           </table>
         </div>
-        <div className="AbroCadabra" style={{ width: '100%', height: '34px', backgroundColor: '#b1b0ae' }}>
+        <div style={{ width: '100%', height: '34px', backgroundColor: '#b1b0ae' }}>
         </div>
       </div>
     </div>

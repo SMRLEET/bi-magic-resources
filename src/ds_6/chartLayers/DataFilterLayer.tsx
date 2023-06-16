@@ -10,7 +10,6 @@ const DataFilterLayer = ({ model, dataSourceCfg, cfg, functionHandler, Chart }) 
   useEffect(() => {
     if ((model.error || model.loading)) return;
     getFilterData(dataSourceCfg.koob, dataSourceCfg.dimensions).then(data => {
-
       setDataset(data);
     })
   }, [])

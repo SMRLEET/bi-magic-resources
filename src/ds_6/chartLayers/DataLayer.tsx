@@ -5,10 +5,9 @@ import { getKoobDataByCfg } from "../utils/DataUtils";
 
 
 const DataLayer = ({ model, dataSourceCfg, cfg, functionHandler, Chart }) => {
-  console.log('render DataLayer')
+
   const [dataset, setDataset] = useState({ source: [], dimensions: [] })
   useEffect(() => {
-
     if ((model.error || model.loading)) return;
     const measures = dataSourceCfg.measures;
     getKoobDataByCfg(
@@ -26,17 +25,12 @@ const DataLayer = ({ model, dataSourceCfg, cfg, functionHandler, Chart }) => {
       }
       )
   }, [JSON.stringify([model.filters, model.hierarchyDim])])
-  const chart = useMemo(() => {
-    return (
-      <Chart
-        dataset={dataset}
-        cfg={cfg}
-        functionHandler={functionHandler}
-      />
-    );
-  }, [JSON.stringify(dataset)])
   return (
-    chart
+    <Chart
+      dataset={dataset}
+      cfg={cfg}
+      functionHandler={functionHandler}
+    />
   );
 }
 export default DataLayer;
