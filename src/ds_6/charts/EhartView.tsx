@@ -27,7 +27,7 @@ function EchartView({
     if (res.echartOptions?.tooltip) {
       const tooltip = res.echartOptions.tooltip.formatter;
       if (String(tooltip).startsWith('function')) {
-        res = ({ ...res.echartOptions, tooltip: { formatter: evalFormatter(tooltip.replace('function', '')) } });
+        res.echartOptions = ({ ...res.echartOptions, tooltip: { formatter: evalFormatter(tooltip.replace('function', '')) } });
       }
     }
     return res;

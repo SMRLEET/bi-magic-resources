@@ -12,8 +12,7 @@ export interface IMyServiceModel {
 export class MyService extends BaseService<IMyServiceModel> {
   private readonly id: string | number;
   private koobFiltersService: Object;
-  private hierarchy: Object;
-  private constructor(koobId: string, hierarchy) {
+  private constructor(koobId: string) {
     super({
       loading: false,
       error: undefined,
@@ -21,9 +20,7 @@ export class MyService extends BaseService<IMyServiceModel> {
       filters: {},
       hierarchyDim: {}
     });
-
     this.id = koobId;
-
   }
 
   public setHierarchyDim(hierarchy, selectedValue) {
@@ -35,21 +32,21 @@ export class MyService extends BaseService<IMyServiceModel> {
       this._updateModel({
         filters: { ...this._model.filters, [hierarchy[hierarchyLevel]]: ['=', selectedValue] },
         hierarchyDim: { ...this._model.hierarchyDim, [hierarchyId]: hierarchy[hierarchyLevel + 1] }
-      })
+      });
     }
     else {
       const dropFilters = {};
       for (let filt of hierarchy) {
         dropFilters[filt] = ['!='];
-      }
+      };
       this._updateModel({
         filters: { ...this._model.filters, ...dropFilters },
         hierarchyDim: { ...this._model.hierarchyDim, [hierarchyId]: hierarchy[0] }
-      })
+      });
 
     }
     if (this.koobFiltersService) {
-      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...this._model.filters } })
+      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...this._model.filters } });
     }
   }
   public dropHierarchy(hierarchy: string[], dropDim: string) {
@@ -64,17 +61,16 @@ export class MyService extends BaseService<IMyServiceModel> {
     this._updateModel({
       filters: { ...this._model.filters, ...dropFilters },
       hierarchyDim: { ...this._model.hierarchyDim, [hierarchyId]: hierarchy[dropLevel] }
-    })
+    });
     if (this.koobFiltersService) {
-      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...this._model.filters } })
+      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...this._model.filters } });
     }
-
   }
 
   public setFilters(filters) {
     this._updateWithData({ ...this._model.filters, ...filters });
     if (this.koobFiltersService) {
-      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...filters } })
+      this.koobFiltersService._updateModel({ filters: { ...this.koobFiltersService._model.filters, ...filters } });
     }
   }
 
@@ -102,7 +98,7 @@ export class MyService extends BaseService<IMyServiceModel> {
           loading: model.loading,
           error: model.error,
           filters: { ...window.LuxmsService[strID]._model.filters, ...model.filters }
-        })
+        });
       });
     }
     const hierarchyId = String(hierarchy).replaceAll(',', '')
@@ -111,7 +107,6 @@ export class MyService extends BaseService<IMyServiceModel> {
       && !window.LuxmsService[strID]._model.hierarchyDim.hasOwnProperty(hierarchyId)) {
       window.LuxmsService[strID]._model.hierarchyDim[hierarchyId] = hierarchy[0];
     }
-
     return window.LuxmsService[strID];
   };
 }
